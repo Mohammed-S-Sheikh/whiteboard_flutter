@@ -89,3 +89,6 @@ Pods/
 **/Flutter/Flutter.framework/
 **/Flutter/Generated.xcconfig
 **/Flutter/flutter_assets/
+
+# FVM Version Cache
+.fvm/

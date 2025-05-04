@@ -133,7 +133,7 @@ class InnerJavascriptInterface {
   }
 
   FutureOr<String> call(String methodName, String argStr) async {
-    void _printDebugInfo(String error) {
+    void printDebugInfo(String error) {
       if (DsBridge.isDebug) {
         var msg = 'DEBUG ERR MSG:\\n ${error.replaceAll("\\'", "\\\\'")}';
         dsBridge.evaluateJavascript("alert('$msg')");
@@ -150,7 +150,7 @@ class InnerJavascriptInterface {
     var ret = <String, dynamic>{};
     ret["code"] = -1;
     if (jsb == null) {
-      _printDebugInfo(error);
+      printDebugInfo(error);
       return ret.toString();
     }
     dynamic arg;
@@ -166,14 +166,14 @@ class InnerJavascriptInterface {
       }
     } catch (e) {
       error = 'The argument of "$methodName" must be a JSON object string!';
-      _printDebugInfo(error);
+      printDebugInfo(error);
       return ret.toString();
     }
 
     if (method is! Function) {
       error = "Not find method $methodName implementation! "
           "please check if the signature or namespace of the method is right ";
-      _printDebugInfo(error);
+      printDebugInfo(error);
       return ret.toString();
     }
 

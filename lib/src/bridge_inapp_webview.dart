@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -11,9 +10,9 @@ class DsBridgeInAppWebView extends StatefulWidget {
   final BridgeCreatedCallback onDSBridgeCreated;
 
   DsBridgeInAppWebView({
-    Key? key,
+    super.key,
     required this.onDSBridgeCreated,
-  }) : super(key: key);
+  });
 
   @override
   DsBridgeInAppWebViewState createState() => DsBridgeInAppWebViewState();
@@ -27,37 +26,34 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) {
-      AndroidInAppWebViewController.setWebContentsDebuggingEnabled(
-        DsBridge.isDebug,
-      );
-    }
+
+    InAppWebViewController.setWebContentsDebuggingEnabled(
+      DsBridge.isDebug,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (_) {
       return InAppWebView(
-        initialUrlRequest: URLRequest(url: Uri.parse("about:blank")),
+        initialUrlRequest: URLRequest(url: WebUri("about:blank")),
         onWebViewCreated: (InAppWebViewController controller) async {
           _controller = controller;
-          _controller.setOptions(
-            options: InAppWebViewGroupOptions(
-                crossPlatform: InAppWebViewOptions(
-                  mediaPlaybackRequiresUserGesture: false,
-                  javaScriptEnabled: true,
-                  userAgent:
-                      "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0",
-                ),
-                ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
+          _controller.setSettings(
+            settings: InAppWebViewSettings(
+              mediaPlaybackRequiresUserGesture: false,
+              javaScriptEnabled: true,
+              userAgent:
+                  "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0",
+              allowsInlineMediaPlayback: true,
+            ),
           );
           controller.loadFile(
               assetFilePath:
                   "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
           await dsBridge.initController(controller);
         },
-        onLoadError: _onLoadError,
-        onLoadHttpError: _onLoadHttpError,
+        onReceivedError: (_, __, error) => _onLoadError(error.description),
         onLoadStart: _onLoadStart,
         onLoadStop: _onLoadStop,
         onConsoleMessage: _onConsoleMessage,
@@ -85,22 +81,7 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     }
   }
 
-  void _onLoadHttpError(
-    InAppWebViewController controller,
-    Uri? url,
-    int statusCode,
-    String description,
-  ) {
-    debugPrint("[InAppWebView] $url load error "
-        "code $statusCode, desc $description");
-  }
-
-  void _onLoadError(
-    InAppWebViewController controller,
-    Uri? url,
-    int code,
-    String message,
-  ) {
+  void _onLoadError(String message) {
     debugPrint("[InAppWebView] load error, message $message");
   }
 }
